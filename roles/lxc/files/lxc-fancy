@@ -1,0 +1,77 @@
+#!/bin/bash
+lxc-ls > /tmp/list.txt
+nodetable () {
+lxc-info -n $1|egrep -i "Name|IP|state" > /tmp/info.txt
+N=`cat /tmp/info.txt|grep Name|awk '{print $2}'`
+S=`cat /tmp/info.txt|grep -i IP|awk '{print $2}'`
+I=`cat /tmp/info.txt|grep -i State|awk '{print $2}'`
+echo "$N        $S      $I"
+}
+
+nodehtable () {
+lxc-info -n $1|egrep -i "Name|IP|state" > /tmp/info.txt
+N=`cat /tmp/info.txt|grep Name|awk '{print $2}'`
+S=`cat /tmp/info.txt|grep -i IP|awk '{print $2}'`
+I=`cat /tmp/info.txt|grep -i State|awk '{print $2}'`
+echo "<tr><td width='100'><a target='_blank' href='/shell/$N'>$N</a></td><td>$S</td><td>$I</td><td><a target='_blank' href='$N.txt'>$N</a></td></tr>"
+}
+
+nodejtable () {
+lxc-info -n $1|egrep -i "Name|IP|state" > /tmp/info.txt
+N=`cat /tmp/info.txt|grep Name|awk '{print $2}'`
+S=`cat /tmp/info.txt|grep -i IP|head -1|awk '{print $2}'`
+I=`cat /tmp/info.txt|grep -i State|awk '{print $2}'`
+echo "{"
+echo "\"name\": \"<a target='_blank' href='/shell/$N'>$N</a></td>\","
+echo "\"state\": \"$S\","
+if [ "$I" == "RUNNING" ]
+then
+echo "\"info\": \"<font color="green"><b>ON -> </b></font><a href='#' onClick=\\\"window.open('/lxc/action.php?n=$N&a=stop','mywindow','width=600,height=400')\\\">stop</a></td>\","
+else
+echo "\"info\": \"<font color="red"><b>OFF -> </b></font><a href='#' onClick=\\\"window.open('/lxc/action.php?n=$N&a=start','mywindow','width=600,height=400')\\\">start</a> OR <a href='#' onClick=\\\"window.open('/lxc/create.php?n=$N&a=rd','mywindow','width=600,height=400')\\\">recreate</a></td>\","
+fi
+echo "\"release\": \"<a target='_blank' href='$N.txt'>$N</a>\""
+echo "},"
+} 
+
+dconsole() {
+echo "Name      IP   State"
+for a in `cat /tmp/list.txt`
+do
+nodetable $a
+done
+}
+
+
+jhtml() {
+echo "["
+all=""
+for a in `cat /tmp/list.txt`
+do
+result=$(nodejtable $a)
+all="$all $result"
+#nodejtable $a
+done
+echo $all |sed 's/.$//g'
+echo "]"
+}
+
+dhtml() {
+echo "<table>"
+echo "<tr><td><b>Name</b></td><td><b>IP</b></td><td><b>State</b></td><td><b>Versions</b></td></tr>"
+for a in `cat /tmp/list.txt`
+do
+nodehtable $a
+done
+echo "</table>"
+}
+
+if [ "$1" == "-j" ]
+then
+jhtml
+elif [ "$1" == "-h" ]
+then
+dhtml
+else
+dconsole
+fi

@@ -1,0 +1,3 @@
+Cmnd_Alias PROCESSES = /usr/bin/lxc-fancy, /usr/bin/lxc-stop, /usr/bin/lxc-start, /usr/bin/lxc-rebuild, /usr/bin/tee
+
+apache     ALL=(ALL)       NOPASSWD: PROCESSES

@@ -1,0 +1,26 @@
+#!/bin/bash
+#Stop
+/usr/bin/lxc-stop -k -n $1
+#Destroy
+/usr/bin/lxc-destroy -n $1
+#Create
+/usr/bin/lxc-create -n $1 -t centos7
+#Cleanup dhcp
+rm /var/lib/dnsmasq/dnsmasq.leases
+service dnsmasq restart
+#Start
+
+/usr/bin/lxc-start -d -n $1
+#Prepare
+#Check if the focker is running with ip
+for a in `seq 1 12`
+do
+lxc-info -n $1 |grep IP:
+if [ "$?" != "0" ]
+then
+ sleep 10
+else
+ break
+fi
+done
+

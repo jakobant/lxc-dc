@@ -1,0 +1,7 @@
+domain={{ lxc_localdomain }}
+interface=lxcbr0
+dhcp-range=lxcbr0,{{ lxcnetwork }}.150,{{ lxcnetwork }}.200,1h
+{% for item in  lxc_hostlist%}
+dhcp-host={{ item.hostname}}.{{ lxc_localdomain }},{{ lxcnetwork }}.{{ item.ip }},1h
+{% endfor %}
+

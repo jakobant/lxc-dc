@@ -1,0 +1,21 @@
+--- 
+- hosts: "{{ vhost }}"
+  vars:
+     host_line_code: ey
+     lxc_create_hosts:
+      - { template: centos7, name: "{{ host_line_code }}-gra-01" }
+      - { template: centos7, name: "{{ host_line_code }}-ela-01" }
+      - { template: centos7, name: "{{ host_line_code }}-zab-01" }
+      - { template: centos7, name: "{{ host_line_code }}-web-01" }
+        #      - { template: centos7, name: "{{ host_line_code }}-web-02" }
+        #      - { template: centos7, name: "{{ host_line_code }}-tom-01" }
+        #      - { template: centos7, name: "{{ host_line_code }}-tom-02" }
+        #      - { template: centos7, name: "{{ host_line_code }}-sys-01" }
+        #      - { template: centos7, name: "{{ host_line_code }}-sys-02" }
+        #      - { template: centos7, name: "{{ host_line_code }}-sys-03" }
+        #      - { template: centos7, name: "{{ host_line_code }}-sys-04" }
+        #      - { template: centos7, name: "{{ host_line_code }}-ora-01" }
+#     - { template: centos7, name: kobbi1 }
+
+  roles: 
+    - lxc

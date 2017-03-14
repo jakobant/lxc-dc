@@ -1,0 +1,10 @@
+# roles/hosts/templates/hosts.j2
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+{% for item in  lxc_hostlist%}
+{{ lxcnetwork }}.{{ item.ip }}  {{ item.hostname}}.{{ lxc_localdomain }} {{ item.hostname}}
+{% endfor %}
+{% for item in  lxc_hostlist2%}
+{{ lxcnetwork2 }}.{{ item.ip }} {{ item.hostname}}.{{ lxc_localdomain }} {{ item.hostname}}
+{% endfor %}

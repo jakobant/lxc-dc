@@ -1,0 +1,300 @@
+---
+#
+- name: debug
+  debug: msg="{{ansible_distribution}}"
+
+- name: Check for EPEL
+  tags: install_epel
+  command: rpm -qa epel-release
+  register: isepel
+
+- name: Install EPEL repo.
+  become: true
+  tags: install_epel
+  yum:
+    name: "{{ epel_repo_url }}"
+    state: present
+  register: result
+  until: '"failed" not in result'
+  retries: 5
+  delay: 10
+  when: isepel|failed
+
+- name: Import EPEL GPG key.
+  become: true
+  tags: install_epel
+  rpm_key:
+    key: "{{ epel_repo_gpg_key_url }}"
+    state: present
+  when: isepel|failed
+
+- name: Install depended rpms
+  become: true
+  yum: pkg={{ item }} state=installed
+  with_items: 
+    - "{{ lxc_rpm }}"
+    
+- name: Disable Selinux for LXC
+  become: true
+  tags: configs
+  selinux: state=disabled
+
+- name: Disable requiretty in sudoers
+  become: true
+  lineinfile:
+          dest: /etc/sudoers
+          regexp: 'Default.*requiretty'
+          state: absent
+- name: Enable ipv6 for bridge to work
+  become: true
+  lineinfile:
+          dest: /etc/modprobe.d/local.conf
+          regexp: 'install ipv6 /bin/true'
+          state: absent
+
+#- name: Command setenfoce
+#  become: true
+#  tags: config
+#  command: setenforce 0
+#  register: isselinux
+
+- name: Update kernel params
+  become: true
+  tags: kernel_params
+  sysctl: name={{ item.name }} value={{ item.value }} state=present
+  with_items: "{{ lxc_kernel_params }}"
+
+- name: Write iptables config file
+  become: true
+  tags: config_iptables
+  template: src=iptables.j2 dest=/etc/sysconfig/iptables
+  #  notify:
+  #  - restart iptables
+
+  #- name: Enable and start iptables
+  #become: true
+  #tags: config_iptables
+  #service: name=iptables state=restarted enabled=yes
+- name: Add firewll sh
+  become: true
+  copy: src=firewall.sh dest=/root/firewall.sh owner=root group=root mode=0755
+
+- name: Enable and start firewalld
+  become: true
+  tags: config_firewalld
+  service: name=firewalld state=restarted enabled=yes
+
+- name: Run firewall sh
+  become: true
+  shell: /root/firewall.sh
+
+- name: Adding lxc-fancy and lxc-rebuild
+  become: true
+  tags: config
+  copy: src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=0755
+  with_items:
+    - { src: lxc-fancy, dest: /usr/bin/lxc-fancy }
+    - { src: lxc-rebuild, dest: /usr/bin/lxc-rebuild }
+
+- name: Adding lxcmon.sh
+  become: true
+  tags: config
+  copy: src=lxcmon.sh dest=/usr/bin/lxcmon.sh owner=root group=root mode=0755
+
+- name: Default apaceh sudo... user
+  become: true
+  tags: sudo
+  copy: src=lxcsudo dest=/etc/sudoers.d/lxcsudo owner=root group=root mode=0440
+
+- name: Create root ssh-key
+  become: true
+  tags: sshkey
+  shell: test -f /root/.ssh/id_dsa || ssh-keygen -t dsa -N '' -f /root/.ssh/id_dsa
+
+- name: Ignore ssh for lxc containers...
+  become: true
+  tags: ssh
+  copy: src=sshconfig dest=/root/.ssh/config owner=root group=root mode=0400
+
+  #- name: Adding centos7 lxc template for RHEL
+  #become: true
+  #tags: config
+  #template: src=lxc-centos7 dest=/usr/share/lxc/templates/lxc-centos7 owner=root group=root mode=0755
+  #  when: ansible_distribution == "RedHat"
+
+- name: Adding centos7 lxc template for CentOS
+  become: true
+  tags: config
+  template: src=lxc-centos7 dest=/usr/share/lxc/templates/lxc-centos7 owner=root group=root mode=0755
+  #  when: ansible_distribution == "CentOS"
+
+- name: Adding centos7 alternetive lxc template CentOS
+  become: true
+  tags: config
+  template: src=lxc-centos7 dest=/usr/share/lxc/templates/lxc-centos7zab owner=root group=root mode=0755
+  #when: ansible_distribution == "CentOS"
+
+- name: Update limits
+  become: true
+  tags: limits
+  copy: src=99-lxc.conf dest=/etc/security/limits.d/99-lxc.conf
+  
+- name: Update limits
+  become: true
+  tags: limits
+  copy: src=limits.conf dest=/etc/security/limits.conf
+  
+- name: Delete default limits
+  become: true
+  tags: limits
+  file: path=/etc/security/limits.d/90-nproc.conf state=absent
+
+- name: Populate hosts file
+  become: true
+  tags: hosts
+  template: src=hosts.j2 dest=/etc/hosts  
+
+- name: Write dnsmasq config files
+  become: true
+  tags: config
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items: "{{ dnsmasq_files }}"
+  #notify:
+  #  - restart dnsmasq
+
+- name: Enable and start dnsmasq
+  become: true
+  tags: dnsmasq_service
+  service: name=dnsmasq state=restarted enabled=yes
+
+- name: Restart the bridge interfaces
+  become: true
+  tags: network_bridge
+  shell: ifdown lxcbr0 ; ifup lxcbr0 ; ifdown lxcbr1 ; ifup lxcbr1
+
+  #- name: Enable cgconfig
+  #become: true
+  #tags: service
+  #service: name=cgconfig state=restarted enabled=yes
+
+- name: Enable lxc
+  become: true
+  tags: service
+  service: name=lxc state=restarted enabled=yes
+
+- name: Disable libvirtd
+  become: true
+  tags: service
+  service: name=libvirtd state=stopped enabled=no
+
+- name: Install apache2 and depended stuff...
+  become: true
+  tags: apache
+  yum: pkg={{ item }} state=installed
+  with_items:
+    - "{{ lxc_overview_rpm }}"
+
+- name: Install overview page
+  become: true
+  tags: overview
+  template: src=index.html.j2 dest=/var/www/html/index.html
+
+- name: Ensures path=/var/www/html/lxc dir exists
+  become: true
+  file: path=/var/www/html/lxc state=directory
+- name: Install actions,css and configs
+  become: true
+  tags: overview
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items: "{{ httpd_files }}"
+  
+- name: Enable httpd
+  become: true
+  tags: service
+  service: name=httpd state=restarted enabled=yes
+
+  #- name: Enable carbon-cache
+  #become: true
+  #tags: service
+  #service: name=carbon-cache state=restarted enabled=yes
+
+  #- name: Configure graphite-web
+  #become: true
+  #tags: configure
+  #shell: /usr/lib/python2.6/site-packages/graphite/manage.py syncdb --noinput
+
+- name: Install Shellinabox
+  become: true
+  tags: webssh
+  yum: pkg=shellinabox state=installed
+- name: Configure Shellinabox
+  become: true
+  tags: webssh
+  template: src=shellinaboxd.j2 dest=/etc/sysconfig/shellinaboxd
+- name: Enable and start Shellinaboxd
+  become: true
+  tags: webssh
+  service: name=shellinaboxd state=restarted enabled=yes
+
+- name: Enable crontab for LXC Monitoring
+  become: true
+  tags: monitor
+  cron: name="lxcmon" minute="*" job="/usr/bin/lxcmon.sh > /dev/null"
+
+- name: Check for Grafana
+  tags: install_grafana
+  command: rpm -qa grafana
+  register: isgrafana
+
+- name: Install Grafana
+  become: true
+  tags: install_grafana
+  yum: pkg={{ grafana_url }} state=installed
+  when: isgrafana|failed
+
+- name: Get zabbix-grafana plugin from url
+  become: true
+  tags: install_grafana_plugin
+  get_url:
+          url: "{{ grafana_zabbix_url }}"
+          dest: /tmp/grafana-zabbix.tar.gz
+          validate_certs: False
+  when: isgrafana|failed
+
+- name: Create Plugin Directory
+  become: true
+  tags: install_grafana_plugin
+  file: path=/var/lib/grafana/plugins state=directory mode=0777
+
+- name: Install Grafana-Zabbix-Plugin
+  become: true
+  tags: install_grafana_plugin
+  unarchive:
+          copy: no
+          src: /tmp/grafana-zabbix.tar.gz
+          dest: /var/lib/grafana/plugins
+          creates: /var/lib/grafana/plugins/grafana-zabbix
+  when: isgrafana|failed
+
+- name: Enable and start Grafana
+  become: true
+  tags: install_grafana
+  service: name=grafana-server state=restarted enabled=yes
+  when: isgrafana|failed
+
+- name: Prep Container Creation
+  become: true
+  file:
+    path: /var/lib/dnsmasq/dnsmasq.leases
+    state: absent
+
+- name: Restart dnsmasq
+  become: true
+  service: name=dnsmasq state=restarted
+
+
+- name: Create few LXC containers.... takes few mins....
+  become: true
+  tags: create_lxc
+  shell: lxc-create -t "{{ item.template }}" -n "{{ item.name }}" ; lxc-start -d -n "{{ item.name }}"
+  with_items: "{{ lxc_create_hosts }}" 

@@ -1,0 +1,137 @@
+body {
+  padding: 30px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+h2 {
+	margin:0 0 .5em 0;
+}
+
+a {
+  color: #00B7FF;
+}
+
+#wrapper {
+	padding-left:312px;
+	position:relative;
+}
+
+#userList {
+	margin:0 0 30px 0;
+}
+	#userList table {
+		border-collapse:separate;
+		border-spacing:1px;
+		background:#CCC;
+	}
+		#userList table th {
+			background:#EEE;
+			font-weight:600;
+			padding:10px 20px;
+			text-align:center;
+		}
+		#userList table tbody {
+			padding:0; margin:0;
+			border-collapse:collapse;
+			border-spacing:0px;
+		}
+			#userList table td {
+				background:#FFF;
+				padding:5px 10px;
+				text-align:center;
+			}
+
+#lxcPic {
+	width:300px;
+	position:absolute;
+	top:0; left:0;
+}
+
+#vmList {
+	margin:0 0 30px 0;
+}
+	#vmList table {
+		border-collapse:separate;
+		border-spacing:1px;
+		background:#CCC;
+	}
+		#vmList table th {
+			background:#EEE;
+			font-weight:600;
+			padding:7px 15px;
+			text-align:center;
+		}
+		#vmList table tbody {
+			padding:0; margin:0;
+			border-collapse:collapse;
+			border-spacing:0px;
+		}
+			#vmList table td {
+				background:#FFF;
+				padding:3px 8px;
+				text-align:center;
+			}
+#lxcList {
+	margin:0 0 30px 0;
+}
+	#lxcList table {
+		border-collapse:separate;
+		border-spacing:1px;
+		background:#CCC;
+	}
+		#lxcList table th {
+			background:#EEE;
+			font-weight:600;
+			padding:7px 15px;
+			text-align:center;
+		}
+		#lxcList table tbody {
+			padding:0; margin:0;
+			border-collapse:collapse;
+			border-spacing:0px;
+		}
+			#lxcList table td {
+				background:#FFF;
+				padding:3px 8px;
+				text-align:center;
+			}
+
+#lxcInfo {
+	width:250px;
+	position:absolute;
+	top:0; left:0;
+}
+	#lxcInfo p {
+		padding:15px;
+		border:1px solid #CCC;
+		background:rgba(80,120,255,0.05);
+	}
+
+#vmInfo {
+	width:300px;
+	position:absolute;
+	top:0; left:0;
+}
+	#vmInfo p {
+		padding:15px;
+		border:1px solid #CCC;
+		background:rgba(80,120,255,0.05);
+	}
+
+
+#userInfo {
+	width:250px;
+	position:absolute;
+	top:0; left:0;
+}
+	#userInfo p {
+		padding:15px;
+		border:1px solid #CCC;
+		background:rgba(80,120,255,0.05);
+	}
+
+fieldset {
+	border:0;
+	padding:0; margin:0;
+}
+

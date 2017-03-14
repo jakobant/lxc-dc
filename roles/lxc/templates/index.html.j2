@@ -1,0 +1,76 @@
+<html><head>
+<META HTTP-EQUIV="refresh" CONTENT="300">
+<link rel="stylesheet" href="/s.css">
+</head>
+<body>
+<!--Wrapper--><div id="wrapper">
+<!-- lxcPic--><div id="lxcPic"><h2>Not So Simple Overview</h2>
+<img src="environment.png" witdh=220 height=220 onmouseover='this.width=600;this.height=600;' onmouseout='this.width=220;this.height=220;'><br>
+<b>MEMORY USAGE</b><br>
+<img witdh=220 height=70 onmouseover='this.width=900;this.height=300;' onmouseout='this.width=220;this.height=70;' src="/render?width=900&from=-12hours&until=now&height=300&=undefined&target=stats.*.MEM&title=Memory&bgcolor=FFFFFF&fgcolor=000000&&hideLegend=false"><br>
+<b>CPU USAGE</b><br>
+<img witdh=220 height=70 onmouseover='this.width=900;this.height=300;' onmouseout='this.width=220;this.height=70;' src="/render?width=900&from=-12hours&until=now&height=300&=undefined&target=nonNegativeDerivative(stats.*.CPU)&title=CPU&bgcolor=FFFFFF&fgcolor=000000&&hideLegend=false"><br>
+ <b>IOPS</b><br>
+<img witdh=220 height=70 onmouseover='this.width=900;this.height=300;' onmouseout='this.width=220;this.height=70;' src="/render?width=900&from=-12hours&until=now&height=300&=undefined&target=nonNegativeDerivative(stats.*.IOPS)&title=Block%20IOPS&bgcolor=FFFFFF&fgcolor=000000&&hideLegend=false"><br>
+<b>NETOUT</b><br>
+<img witdh=220 height=70 onmouseover='this.width=900;this.height=300;' onmouseout='this.width=220;this.height=70;' src="/render?width=900&from=-12hours&until=now&height=300&=undefined&target=nonNegativeDerivative(stats.*.NETOUT)&title=NetOut&bgcolor=FFFFFF&fgcolor=000000&&hideLegend=false"><br>
+<b>NETIN</b><br>
+<img witdh=220 height=70 onmouseover='this.width=900;this.height=300;' onmouseout='this.width=220;this.height=70;' src="/render?width=900&from=-12hours&until=now&height=300&=undefined&target=nonNegativeDerivative(stats.*.NETIN)&title=NetIn&bgcolor=FFFFFF&fgcolor=000000&&hideLegend=false"><br>
+</div> <!-- /lxcPic-->
+<!--lccList--><div id="lxcList"><h2>LCX List</h2><p>
+<strong>GIT:</strong> <span id='vmInfoGit'></span><br>
+<strong>Environment:</strong> <span id='vmInfoEnv'></span><br>
+<strong>Database:</strong> <span id='vmInfoDB'></span><br>
+<div id="lxcId"></div>
+<b>Various use full links for installed services</b><br>
+<a target='_blank' href="/zabbix/">Zabbix</a> Zabbix <br>
+<a target='_blank' href="http://xx:5601">Kibana - ELK</a> Kibana - ELK. <br>
+<!-- <a target='_blank' href="http://xx:8642/">Zico</a> Zico ..<br> -->
+<b>Other interesting links :</b><br>
+<!-- <a target='_blank' href="http://xx/haproxyStats">HAProxy STATS (admin/ixj...)</a><br> -->
+<a target='_blank' href="http://xx:81/">Graphite</a><br>
+<a target='_blank' href="http://xx:3000/">Grafhana</a> <br>
+</p>
+</div> <!-- /lxcList-->
+</div> <!-- /Wrapper-->
+
+<script>
+var xmlhttp = new XMLHttpRequest();
+var url = "lxc.json";
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var myArr = JSON.parse(xmlhttp.responseText);
+        myFunction(myArr);
+    }
+}
+xmlhttp.open("GET", url, true);
+xmlhttp.send();
+function myFunction(arr) {
+    var out = '<table><thead><th><b>Name</b></th><th><b>IP</b></th><th><b>State</b></th><th><b>Versions</b></th>';
+    var i;
+    for(i = 0; i < arr.length; i++) {
+	out = out + '<tr><td>'+arr[i].name+'</td><td>'+arr[i].state+'</td><td>'+arr[i].info+'</td><td>'+arr[i].release+'</td></tr>';
+    }
+    out = out + '</thead></table>';
+    document.getElementById("lxcId").innerHTML = out;
+}
+</script>
+<script>
+var xmlhttp2 = new XMLHttpRequest();
+var url2 = "configs.json";
+xmlhttp2.onreadystatechange = function() {
+    if (xmlhttp2.readyState == 4 && xmlhttp2.status == 200) {
+        var myArr2 = JSON.parse(xmlhttp2.responseText);
+        myFunction2(myArr2);
+    }
+}
+xmlhttp2.open("GET", url2, true);
+xmlhttp2.send();
+function myFunction2(arr2) {
+    document.getElementById("vmInfoGit").innerHTML = arr2[0].git;
+    document.getElementById("vmInfoEnv").innerHTML = arr2[0].environment;
+    document.getElementById("vmInfoDB").innerHTML = arr2[0].database;
+}
+</script>
+</body></html>
+

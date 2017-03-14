@@ -1,0 +1,112 @@
+---
+centos: true
+host_line_code: "bc"
+
+epel_repo_url: "//dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm"
+epel_repo_gpg_key_url: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+
+lxc_rpm:
+  - wget
+  - curl 
+  - unzip
+  - zip 
+  - libselinux-python 
+  - lxc
+  - lxc-templates
+  - yum-utils
+  - dnsmasq
+  - vim-enhanced
+  - libvirt
+  - libvirt-client
+  - bridge-utils
+  - libcgroup
+  - git
+  - iptables
+  - firewalld
+  - lxc-extra
+  - mailx
+
+lxc_overview_rpm:
+  - httpd
+  - php
+
+lxcnetwork: "10.0.10"
+lxcnetwork2: "10.0.11"
+lxcnetwork3: "10.0.12"
+lxcnetwork4: "10.0.13"
+lxcnetwork5: "10.0.14"
+lxcnetwork5: "10.0.15"
+
+lxc_kernel_params:
+  - { name: fs.suid_dumpable, value: 1 }
+  - { name: fs.aio-max-nr, value: 1048576 }
+  - { name: fs.file-max, value: 6815744 }
+  - { name: net.ipv4.ip_local_port_range, value: '"9000 65500"' }
+  - { name: net.ipv4.ip_forward, value: 1 }
+  - { name: kernel.msgmnb, value: 65536 }
+  - { name: kernel.msgmax, value: 65536 }
+  - { name: kernel.shmmax, value: 268435456 }
+  #- { name: kernel.shmall, value: 2097152 }
+  #- { name: kernel.sem, value: '"32 4096 32 128"' }
+  - { name: kernel.shmmni, value: 4096 }
+
+httpd_files:
+  - { src: s.css, dest: /var/www/html/s.css }
+  - { src: action.php, dest: /var/www/html/lxc/action.php }
+  - { src: create.php, dest: /var/www/html/lxc/create.php }
+    #  - { src: storage-schemas.conf, dest: /etc/carbon/storage-schemas.conf }
+  - { src: overview.conf, dest: /etc/httpd/conf.d/overview.conf }
+    #  - { src: graphite-web.conf, dest: /etc/httpd/conf.d/graphite-web.conf }
+  - { src: environment.png, dest: /var/www/html/environment.png }
+
+dnsmasq_files:
+  - { src: dnsmasq.conf.j2, dest: /etc/dnsmasq.conf }
+  - { src: ssa-lxcbr0.conf.j2, dest: /etc/dnsmasq.d/ssa-lxcbr0.conf }
+  - { src: ssa-lxcbr1.conf.j2, dest: /etc/dnsmasq.d/ssa-lxcbr1.conf }
+  - { src: ifcfg-lxcbr0.j2, dest: /etc/sysconfig/network-scripts/ifcfg-lxcbr0 }
+  - { src: ifcfg-lxcbr1.j2, dest: /etc/sysconfig/network-scripts/ifcfg-lxcbr1 }
+  - { src: lxcbr1.conf.j2, dest: /etc/lxc/lxcbr1.conf }
+  - { src: default.conf.j2, dest: /etc/lxc/default.conf }
+
+lxc_localdomain: "{{ host_line_code }}.flott.com"
+
+lxc_hostlist:
+  - { ip: 2,    hostname: "{{ host_line_code }}-zab-01" } 
+  - { ip: 3,    hostname: "{{ host_line_code }}-mon-01" } 
+  - { ip: 4,    hostname: "{{ host_line_code }}-log-01" } 
+  - { ip: 5,    hostname: "{{ host_line_code }}-ela-01" } 
+  - { ip: 6,    hostname: "{{ host_line_code }}-gra-01" } 
+  - { ip: 10,    hostname: "{{ host_line_code }}-lbs-01" }
+  - { ip: 11,    hostname: "{{ host_line_code }}-rpt-01" }
+  - { ip: 21,    hostname: "{{ host_line_code }}-act-01" }
+  - { ip: 22,    hostname: "{{ host_line_code }}-act-02" }
+  - { ip: 31,    hostname: "{{ host_line_code }}-web-01" }
+  - { ip: 32,    hostname: "{{ host_line_code }}-web-02" }
+  - { ip: 41,    hostname: "{{ host_line_code }}-mqs-01" }
+  - { ip: 42,    hostname: "{{ host_line_code }}-mqs-02" }
+  - { ip: 61,    hostname: "{{ host_line_code }}-sys-01" }
+  - { ip: 62,    hostname: "{{ host_line_code }}-sys-02" }
+  - { ip: 63,    hostname: "{{ host_line_code }}-sys-03" }
+  - { ip: 64,    hostname: "{{ host_line_code }}-sys-04" }
+  - { ip: 65,    hostname: "{{ host_line_code }}-sys-05" }
+  - { ip: 66,    hostname: "{{ host_line_code }}-sys-06" }
+  - { ip: 71,    hostname: "{{ host_line_code }}-tom-01" }
+  - { ip: 72,    hostname: "{{ host_line_code }}-tom-02" }
+  - { ip: 160,    hostname: "{{ host_line_code }}-ora-01" }
+
+
+lxc_hostlist2:
+  - { ip: 100,  hostname: "{{ host_line_code }}-rem-01" } 
+
+lxc_create_hosts:
+  - { template: centos7, name: "{{ host_line_code }}-zab-01" }
+  - { template: centos7, name: "{{ host_line_code }}-act-01" }
+  - { template: centos7, name: "{{ host_line_code }}-rpt-01" }
+  - { template: centos7, name: "{{ host_line_code }}-mqs-01" }
+  - { template: centos7, name: "{{ host_line_code }}-web-01" }
+  - { template: centos7, name: "{{ host_line_code }}-tom-01" }
+  - { template: centos7, name: "{{ host_line_code }}-sys-01" }
+  - { template: centos7, name: "{{ host_line_code }}-sys-02" }
+  - { template: centos7, name: "{{ host_line_code }}-sys-03" }
+  - { template: centos7, name: "{{ host_line_code }}-sys-04" }
+  - { template: centos7, name: "{{ host_line_code }}-ora-01" }
